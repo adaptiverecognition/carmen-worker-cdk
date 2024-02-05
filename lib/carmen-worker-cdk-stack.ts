@@ -104,7 +104,7 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
         connectionType: apigateway.ConnectionType.VPC_LINK,
         vpcLink: vpcLink,
         requestParameters: {
-          'integration.request.path.region': 'method.request.path.region'
+          'region': 'method.request.path.region'
         }
       },
       uri: `http://${loadBalancer.loadBalancerDnsName}/{region}`
@@ -112,7 +112,7 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
     
     regionResource.addMethod('POST', integration, {
       requestParameters: {
-        'method.request.path.region': true
+        'region': true
       }
     });
 

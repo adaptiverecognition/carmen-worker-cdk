@@ -11,6 +11,35 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const amiId = 'ami-03a9ccf07696362ab';
+
+    const parameters = {
+      instanceType: new cdk.CfnParameter(this, 'InstanceType', {
+        type: 'String',
+        description: 'The type of the AWS EC2 instance to create. Default: `t4g.small`.',
+        default: 't4g.small'
+      }),
+      apiKey: new cdk.CfnParameter(this, 'ApiKey', {
+        type: 'String',
+        description: 'The Carmen Cloud API Key to use for calling the License Service.',
+      }),
+      vehicleRegions: new cdk.CfnParameter(this, 'VehicleRegions', {
+        type: 'String',
+        description: 'The regions to load engines for.',
+        default: 'eur'
+      }),
+      initDefaultEngines: new cdk.CfnParameter(this, 'InitDefaultEngines', {
+        type: 'String',
+        default: 'false'
+      }),
+      transportTypes: new cdk.CfnParameter(this, 'TransportTypes', {
+        type: 'String',
+        default: '',
+      })
+    };
+
+    // cdk.Tags.of(autoScalingGroup).add('ApiKey', 'e2dcf1e40f97e75073277df3aef5d709845e298b');
+
     const vpc = new ec2.Vpc(this, 'VPC', {
       maxAzs: 3
     });
@@ -30,12 +59,9 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
     });
     role.attachInlinePolicy(policy);
 
-    const instanceType = 't4g.small';
-    const amiId = 'ami-03a9ccf07696362ab';
-
     const autoScalingGroup = new autoscaling.AutoScalingGroup(this, 'AutoScalingGroup', {
       vpc,
-      instanceType: new ec2.InstanceType(instanceType),
+      instanceType: new ec2.InstanceType(parameters.instanceType.valueAsString),
       machineImage: ec2.MachineImage.genericLinux({
         'eu-central-1': amiId
       }),
@@ -46,10 +72,16 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
       role
     });
 
+    cdk.Tags.of(autoScalingGroup).add('ApiKey', parameters.apiKey.valueAsString);
+    cdk.Tags.of(autoScalingGroup).add('VehicleRegions', parameters.vehicleRegions.valueAsString);
+    cdk.Tags.of(autoScalingGroup).add('InitDefaultEngines', parameters.initDefaultEngines.valueAsString);
+    cdk.Tags.of(autoScalingGroup).add('TransportTypes', parameters.transportTypes.valueAsString);
+
     const startupScriptPath = './assets/instance-startup-script';
     const startupScript = fs.readFileSync(startupScriptPath, 'utf8');
 
     autoScalingGroup.addUserData(startupScript);
+    
 
     const loadBalancer = new elbv2.NetworkLoadBalancer(this, 'NetworkLoadBalancer', {
       vpc,
@@ -73,29 +105,18 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
       targets: [loadBalancer],
     });
 
+    vpcLink.node.addDependency(loadBalancer);
+
     const api = new apigateway.RestApi(this, 'CarmenWorkerAPI', {
       restApiName: 'CarmenWorkerApi',
-      description: 'API for the self-hosted Carmen Worker.'
+      description: 'API for the self-hosted Carmen Worker.',
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS
+      }
     });
 
-    // Add /{region} resource with OPTIONS and POST
+    // POST /{region}
     const regionResource = api.root.addResource('{region}');
-    regionResource.addMethod('OPTIONS', new apigateway.MockIntegration({
-      integrationResponses: [{
-        statusCode: '200',
-        responseParameters: {
-          'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-          'method.response.header.Access-Control-Allow-Origin': "'*'",
-          'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,POST'"
-        }
-      }],
-      passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
-      requestTemplates: {
-        'application/json': '{"statusCode": 200}'
-      }
-    }), {
-      methodResponses: [{ statusCode: '200' }],
-    });
     
     const integration = new apigateway.Integration({
       type: apigateway.IntegrationType.HTTP_PROXY,
@@ -104,59 +125,47 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
         connectionType: apigateway.ConnectionType.VPC_LINK,
         vpcLink: vpcLink,
         requestParameters: {
-          'region': 'method.request.path.region'
+          'integration.request.path.region': 'method.request.path.region'
         }
       },
-      uri: `http://${loadBalancer.loadBalancerDnsName}/{region}`
+      uri: `http://${loadBalancer.loadBalancerDnsName}/vehicle/{region}`
     });
     
     regionResource.addMethod('POST', integration, {
       requestParameters: {
-        'region': true
+        'method.request.path.region': true
       }
     });
 
-    // Add /countries resource with OPTIONS and GET
+    // GET /countries
     const countriesResource = api.root.addResource('countries');
-    countriesResource.addMethod('OPTIONS', new apigateway.MockIntegration({
-      integrationResponses: [{
-        statusCode: '200',
-        responseParameters: {
-          'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-          'method.response.header.Access-Control-Allow-Origin': "'*'",
-          'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,POST'"
-        }
-      }],
-      passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
-      requestTemplates: {
-        'application/json': '{"statusCode": 200}'
-      }
-    }), {
-      methodResponses: [{ statusCode: '200' }],
-    });
-    // Add GET method (integration with VPC Link)
-    // countriesResource.addMethod('GET', /* Integration details here */);
 
-    // Add /services resource with OPTIONS and GET
-    const servicesResource = api.root.addResource('services');
-    servicesResource.addMethod('OPTIONS', new apigateway.MockIntegration({
-      integrationResponses: [{
-        statusCode: '200',
-        responseParameters: {
-          'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-          'method.response.header.Access-Control-Allow-Origin': "'*'",
-          'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,POST'"
-        }
-      }],
-      passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
-      requestTemplates: {
-        'application/json': '{"statusCode": 200}'
-      }
-    }), {
-      methodResponses: [{ statusCode: '200' }],
+    const countriesIntegration = new apigateway.Integration({
+      type: apigateway.IntegrationType.HTTP_PROXY,
+      integrationHttpMethod: 'GET',
+      options: {
+        connectionType: apigateway.ConnectionType.VPC_LINK,
+        vpcLink: vpcLink,
+      },
+      uri: `http://${loadBalancer.loadBalancerDnsName}/countries`
     });
-    // Add GET method (integration with VPC Link)
-    // servicesResource.addMethod('GET', /* Integration details here */);
+
+    countriesResource.addMethod('GET', countriesIntegration);
+
+    // GET /services
+    const servicesResource = api.root.addResource('services');
+
+    const servicesIntegration = new apigateway.Integration({
+      type: apigateway.IntegrationType.HTTP_PROXY,
+      integrationHttpMethod: 'GET',
+      options: {
+        connectionType: apigateway.ConnectionType.VPC_LINK,
+        vpcLink: vpcLink,
+      },
+      uri: `http://${loadBalancer.loadBalancerDnsName}/services`
+    });
+
+    servicesResource.addMethod('GET', servicesIntegration);
 
   }
 }

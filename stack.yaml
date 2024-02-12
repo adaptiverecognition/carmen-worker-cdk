@@ -1,0 +1,1022 @@
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t4g.small
+    Description: "The type of the AWS EC2 instance to create. Default: `t4g.small`."
+  ApiKey:
+    Type: String
+    Description: The Carmen Cloud API Key to use for calling the License Service.
+  VehicleRegions:
+    Type: String
+    Default: eur
+    Description: The regions to load engines for.
+  InitDefaultEngines:
+    Type: String
+    Default: "false"
+  TransportTypes:
+    Type: String
+    Default: ""
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Resources:
+  VPCB9E5F0B4:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/Resource
+  VPCPublicSubnet1SubnetB4246D30:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.0.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: Public
+        - Key: aws-cdk:subnet-type
+          Value: Public
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PublicSubnet1
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet1/Subnet
+  VPCPublicSubnet1RouteTableFEE4B781:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PublicSubnet1
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet1/RouteTable
+  VPCPublicSubnet1RouteTableAssociation0B0896DC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VPCPublicSubnet1RouteTableFEE4B781
+      SubnetId:
+        Ref: VPCPublicSubnet1SubnetB4246D30
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet1/RouteTableAssociation
+  VPCPublicSubnet1DefaultRoute91CEF279:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: VPCIGWB7E252D3
+      RouteTableId:
+        Ref: VPCPublicSubnet1RouteTableFEE4B781
+    DependsOn:
+      - VPCVPCGW99B986DC
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet1/DefaultRoute
+  VPCPublicSubnet1EIP6AD938E8:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PublicSubnet1
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet1/EIP
+  VPCPublicSubnet1NATGatewayE0556630:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+          - VPCPublicSubnet1EIP6AD938E8
+          - AllocationId
+      SubnetId:
+        Ref: VPCPublicSubnet1SubnetB4246D30
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PublicSubnet1
+    DependsOn:
+      - VPCPublicSubnet1DefaultRoute91CEF279
+      - VPCPublicSubnet1RouteTableAssociation0B0896DC
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet1/NATGateway
+  VPCPublicSubnet2Subnet74179F39:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.64.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: Public
+        - Key: aws-cdk:subnet-type
+          Value: Public
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PublicSubnet2
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet2/Subnet
+  VPCPublicSubnet2RouteTable6F1A15F1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PublicSubnet2
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet2/RouteTable
+  VPCPublicSubnet2RouteTableAssociation5A808732:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VPCPublicSubnet2RouteTable6F1A15F1
+      SubnetId:
+        Ref: VPCPublicSubnet2Subnet74179F39
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet2/RouteTableAssociation
+  VPCPublicSubnet2DefaultRouteB7481BBA:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: VPCIGWB7E252D3
+      RouteTableId:
+        Ref: VPCPublicSubnet2RouteTable6F1A15F1
+    DependsOn:
+      - VPCVPCGW99B986DC
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet2/DefaultRoute
+  VPCPublicSubnet2EIP4947BC00:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PublicSubnet2
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet2/EIP
+  VPCPublicSubnet2NATGateway3C070193:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+          - VPCPublicSubnet2EIP4947BC00
+          - AllocationId
+      SubnetId:
+        Ref: VPCPublicSubnet2Subnet74179F39
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PublicSubnet2
+    DependsOn:
+      - VPCPublicSubnet2DefaultRouteB7481BBA
+      - VPCPublicSubnet2RouteTableAssociation5A808732
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PublicSubnet2/NATGateway
+  VPCPrivateSubnet1Subnet8BCA10E0:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.128.0/18
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: Private
+        - Key: aws-cdk:subnet-type
+          Value: Private
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PrivateSubnet1
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PrivateSubnet1/Subnet
+  VPCPrivateSubnet1RouteTableBE8A6027:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PrivateSubnet1
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PrivateSubnet1/RouteTable
+  VPCPrivateSubnet1RouteTableAssociation347902D1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VPCPrivateSubnet1RouteTableBE8A6027
+      SubnetId:
+        Ref: VPCPrivateSubnet1Subnet8BCA10E0
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PrivateSubnet1/RouteTableAssociation
+  VPCPrivateSubnet1DefaultRouteAE1D6490:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: VPCPublicSubnet1NATGatewayE0556630
+      RouteTableId:
+        Ref: VPCPrivateSubnet1RouteTableBE8A6027
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PrivateSubnet1/DefaultRoute
+  VPCPrivateSubnet2SubnetCFCDAA7A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.192.0/18
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: Private
+        - Key: aws-cdk:subnet-type
+          Value: Private
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PrivateSubnet2
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PrivateSubnet2/Subnet
+  VPCPrivateSubnet2RouteTable0A19E10E:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC/PrivateSubnet2
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PrivateSubnet2/RouteTable
+  VPCPrivateSubnet2RouteTableAssociation0C73D413:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VPCPrivateSubnet2RouteTable0A19E10E
+      SubnetId:
+        Ref: VPCPrivateSubnet2SubnetCFCDAA7A
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PrivateSubnet2/RouteTableAssociation
+  VPCPrivateSubnet2DefaultRouteF4F5CFD2:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: VPCPublicSubnet2NATGateway3C070193
+      RouteTableId:
+        Ref: VPCPrivateSubnet2RouteTable0A19E10E
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/PrivateSubnet2/DefaultRoute
+  VPCIGWB7E252D3:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: CarmenWorkerCdkStack/VPC
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/IGW
+  VPCVPCGW99B986DC:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: VPCIGWB7E252D3
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/VPCGW
+  VPCRestrictDefaultSecurityGroupCustomResource59474679:
+    Type: Custom::VpcRestrictDefaultSG
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomVpcRestrictDefaultSGCustomResourceProviderHandlerDC833E5E
+          - Arn
+      DefaultSecurityGroupId:
+        Fn::GetAtt:
+          - VPCB9E5F0B4
+          - DefaultSecurityGroup
+      Account:
+        Ref: AWS::AccountId
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VPC/RestrictDefaultSecurityGroupCustomResource/Default
+  CustomVpcRestrictDefaultSGCustomResourceProviderRole26592FE0:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: Inline
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:AuthorizeSecurityGroupIngress
+                  - ec2:AuthorizeSecurityGroupEgress
+                  - ec2:RevokeSecurityGroupIngress
+                  - ec2:RevokeSecurityGroupEgress
+                Resource:
+                  - Fn::Join:
+                      - ""
+                      - - "arn:"
+                        - Ref: AWS::Partition
+                        - ":ec2:"
+                        - Ref: AWS::Region
+                        - ":"
+                        - Ref: AWS::AccountId
+                        - :security-group/
+                        - Fn::GetAtt:
+                            - VPCB9E5F0B4
+                            - DefaultSecurityGroup
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/Custom::VpcRestrictDefaultSGCustomResourceProvider/Role
+  CustomVpcRestrictDefaultSGCustomResourceProviderHandlerDC833E5E:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}
+        S3Key: dd5711540f04e06aa955d7f4862fc04e8cdea464cb590dae91ed2976bb78098e.zip
+      Timeout: 900
+      MemorySize: 128
+      Handler: __entrypoint__.handler
+      Role:
+        Fn::GetAtt:
+          - CustomVpcRestrictDefaultSGCustomResourceProviderRole26592FE0
+          - Arn
+      Runtime: nodejs18.x
+      Description: Lambda function for removing all inbound/outbound rules from the VPC default security group
+    DependsOn:
+      - CustomVpcRestrictDefaultSGCustomResourceProviderRole26592FE0
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/Custom::VpcRestrictDefaultSGCustomResourceProvider/Handler
+      aws:asset:path: asset.dd5711540f04e06aa955d7f4862fc04e8cdea464cb590dae91ed2976bb78098e
+      aws:asset:property: Code
+  InstanceRole3CCE2F1D:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/InstanceRole/Resource
+  CustomDescribeEC2Policy0AE16444:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ec2:DescribeInstances
+              - ec2:DescribeTags
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: CustomDescribeEC2Policy0AE16444
+      Roles:
+        - Ref: InstanceRole3CCE2F1D
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CustomDescribeEC2Policy/Resource
+  AutoScalingGroupInstanceSecurityGroup9D2E0C5E:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: CarmenWorkerCdkStack/AutoScalingGroup/InstanceSecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      Tags:
+        - Key: ApiKey
+          Value:
+            Ref: ApiKey
+        - Key: InitDefaultEngines
+          Value:
+            Ref: InitDefaultEngines
+        - Key: Name
+          Value: CarmenWorkerCdkStack/AutoScalingGroup
+        - Key: TransportTypes
+          Value:
+            Ref: TransportTypes
+        - Key: VehicleRegions
+          Value:
+            Ref: VehicleRegions
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/AutoScalingGroup/InstanceSecurityGroup/Resource
+  AutoScalingGroupInstanceProfile342FAC7C:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - Ref: InstanceRole3CCE2F1D
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/AutoScalingGroup/InstanceProfile
+  AutoScalingGroupLaunchTemplateCE2B3AFE:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+              - AutoScalingGroupInstanceProfile342FAC7C
+              - Arn
+        ImageId:
+          Fn::FindInMap:
+            - AutoScalingGroupLaunchTemplateAmiMap85FD2B21
+            - Ref: AWS::Region
+            - ami
+        InstanceType:
+          Ref: InstanceType
+        Monitoring:
+          Enabled: false
+        SecurityGroupIds:
+          - Fn::GetAtt:
+              - AutoScalingGroupInstanceSecurityGroup9D2E0C5E
+              - GroupId
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: ApiKey
+                Value:
+                  Ref: ApiKey
+              - Key: InitDefaultEngines
+                Value:
+                  Ref: InitDefaultEngines
+              - Key: Name
+                Value: CarmenWorkerCdkStack/AutoScalingGroup/LaunchTemplate
+              - Key: TransportTypes
+                Value:
+                  Ref: TransportTypes
+              - Key: VehicleRegions
+                Value:
+                  Ref: VehicleRegions
+          - ResourceType: volume
+            Tags:
+              - Key: ApiKey
+                Value:
+                  Ref: ApiKey
+              - Key: InitDefaultEngines
+                Value:
+                  Ref: InitDefaultEngines
+              - Key: Name
+                Value: CarmenWorkerCdkStack/AutoScalingGroup/LaunchTemplate
+              - Key: TransportTypes
+                Value:
+                  Ref: TransportTypes
+              - Key: VehicleRegions
+                Value:
+                  Ref: VehicleRegions
+        UserData:
+          Fn::Base64: |
+            #!/bin/bash
+            Content-Type: multipart/mixed; boundary="//"
+            MIME-Version: 1.0
+
+            --//
+            Content-Type: text/cloud-config; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+            Content-Disposition: attachment; filename="cloud-config.txt"
+
+            #cloud-config
+            cloud_final_modules:
+            - [scripts-user, always]
+
+            --//
+            Content-Type: text/x-shellscript; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+            Content-Disposition: attachment; filename="userdata.txt"
+
+            #!/bin/bash
+            yum update -y
+            /home/ec2-user/carmen-worker.sh
+            --//--
+      TagSpecifications:
+        - ResourceType: launch-template
+          Tags:
+            - Key: ApiKey
+              Value:
+                Ref: ApiKey
+            - Key: InitDefaultEngines
+              Value:
+                Ref: InitDefaultEngines
+            - Key: Name
+              Value: CarmenWorkerCdkStack/AutoScalingGroup/LaunchTemplate
+            - Key: TransportTypes
+              Value:
+                Ref: TransportTypes
+            - Key: VehicleRegions
+              Value:
+                Ref: VehicleRegions
+    DependsOn:
+      - InstanceRole3CCE2F1D
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/AutoScalingGroup/LaunchTemplate/Resource
+  AutoScalingGroupASG804C35BE:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      DesiredCapacity: "1"
+      LaunchTemplate:
+        LaunchTemplateId:
+          Ref: AutoScalingGroupLaunchTemplateCE2B3AFE
+        Version:
+          Fn::GetAtt:
+            - AutoScalingGroupLaunchTemplateCE2B3AFE
+            - LatestVersionNumber
+      MaxSize: "4"
+      MinSize: "1"
+      Tags:
+        - Key: ApiKey
+          PropagateAtLaunch: true
+          Value:
+            Ref: ApiKey
+        - Key: InitDefaultEngines
+          PropagateAtLaunch: true
+          Value:
+            Ref: InitDefaultEngines
+        - Key: Name
+          PropagateAtLaunch: true
+          Value: CarmenWorkerCdkStack/AutoScalingGroup
+        - Key: TransportTypes
+          PropagateAtLaunch: true
+          Value:
+            Ref: TransportTypes
+        - Key: VehicleRegions
+          PropagateAtLaunch: true
+          Value:
+            Ref: VehicleRegions
+      TargetGroupARNs:
+        - Ref: TargetGroup3D7CD9B8
+      VPCZoneIdentifier:
+        - Ref: VPCPrivateSubnet1Subnet8BCA10E0
+        - Ref: VPCPrivateSubnet2SubnetCFCDAA7A
+    UpdatePolicy:
+      AutoScalingScheduledAction:
+        IgnoreUnmodifiedGroupSizeProperties: true
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/AutoScalingGroup/ASG
+  NetworkLoadBalancer8E753273:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: "false"
+      Scheme: internet-facing
+      Subnets:
+        - Ref: VPCPublicSubnet1SubnetB4246D30
+        - Ref: VPCPublicSubnet2Subnet74179F39
+      Type: network
+    DependsOn:
+      - VPCPublicSubnet1DefaultRoute91CEF279
+      - VPCPublicSubnet1RouteTableAssociation0B0896DC
+      - VPCPublicSubnet2DefaultRouteB7481BBA
+      - VPCPublicSubnet2RouteTableAssociation5A808732
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/NetworkLoadBalancer/Resource
+  NetworkLoadBalancerListener6C8C34A8:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn:
+            Ref: TargetGroup3D7CD9B8
+          Type: forward
+      LoadBalancerArn:
+        Ref: NetworkLoadBalancer8E753273
+      Port: 80
+      Protocol: TCP
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/NetworkLoadBalancer/Listener/Resource
+  TargetGroup3D7CD9B8:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      Protocol: TCP
+      TargetType: instance
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/TargetGroup/Resource
+  VpcLink42ED6FF0:
+    Type: AWS::ApiGateway::VpcLink
+    Properties:
+      Name: CarmenWorkerCdkStackVpcLinkD0CE6131
+      TargetArns:
+        - Ref: NetworkLoadBalancer8E753273
+    DependsOn:
+      - NetworkLoadBalancerListener6C8C34A8
+      - NetworkLoadBalancer8E753273
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/VpcLink/Resource
+  CarmenWorkerAPIDEDBEDC3:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: API for the self-hosted Carmen Worker.
+      Name: CarmenWorkerApi
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Resource
+  CarmenWorkerAPIDeployment50E87383bc45fa91411a23b522324aa0b33f73e9:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      Description: API for the self-hosted Carmen Worker.
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    DependsOn:
+      - CarmenWorkerAPIregionOPTIONS1A5E8911
+      - CarmenWorkerAPIregionPOSTF726AB1B
+      - CarmenWorkerAPIregion7EA68C07
+      - CarmenWorkerAPIcountriesGETCB3AEA81
+      - CarmenWorkerAPIcountriesOPTIONS613FDBD8
+      - CarmenWorkerAPIcountries81479692
+      - CarmenWorkerAPIOPTIONSF310253C
+      - CarmenWorkerAPIservicesGET3AB9E228
+      - CarmenWorkerAPIservicesOPTIONS389799B5
+      - CarmenWorkerAPIservices7B04142C
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Deployment/Resource
+  CarmenWorkerAPIDeploymentStageprodA76C1BA3:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      DeploymentId:
+        Ref: CarmenWorkerAPIDeployment50E87383bc45fa91411a23b522324aa0b33f73e9
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+      StageName: prod
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/DeploymentStage.prod/Resource
+  CarmenWorkerAPIOPTIONSF310253C:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+            StatusCode: "204"
+        RequestTemplates:
+          application/json: "{ statusCode: 200 }"
+        Type: MOCK
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Methods: true
+          StatusCode: "204"
+      ResourceId:
+        Fn::GetAtt:
+          - CarmenWorkerAPIDEDBEDC3
+          - RootResourceId
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/OPTIONS/Resource
+  CarmenWorkerAPIregion7EA68C07:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - CarmenWorkerAPIDEDBEDC3
+          - RootResourceId
+      PathPart: "{region}"
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/{region}/Resource
+  CarmenWorkerAPIregionOPTIONS1A5E8911:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+            StatusCode: "204"
+        RequestTemplates:
+          application/json: "{ statusCode: 200 }"
+        Type: MOCK
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Methods: true
+          StatusCode: "204"
+      ResourceId:
+        Ref: CarmenWorkerAPIregion7EA68C07
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/{region}/OPTIONS/Resource
+  CarmenWorkerAPIregionPOSTF726AB1B:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        ConnectionId:
+          Ref: VpcLink42ED6FF0
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        RequestParameters:
+          integration.request.path.region: method.request.path.region
+        Type: HTTP_PROXY
+        Uri:
+          Fn::Join:
+            - ""
+            - - http://
+              - Fn::GetAtt:
+                  - NetworkLoadBalancer8E753273
+                  - DNSName
+              - /vehicle/{region}
+      RequestParameters:
+        method.request.path.region: true
+      ResourceId:
+        Ref: CarmenWorkerAPIregion7EA68C07
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/{region}/POST/Resource
+  CarmenWorkerAPIcountries81479692:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - CarmenWorkerAPIDEDBEDC3
+          - RootResourceId
+      PathPart: countries
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/countries/Resource
+  CarmenWorkerAPIcountriesOPTIONS613FDBD8:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+            StatusCode: "204"
+        RequestTemplates:
+          application/json: "{ statusCode: 200 }"
+        Type: MOCK
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Methods: true
+          StatusCode: "204"
+      ResourceId:
+        Ref: CarmenWorkerAPIcountries81479692
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/countries/OPTIONS/Resource
+  CarmenWorkerAPIcountriesGETCB3AEA81:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        ConnectionId:
+          Ref: VpcLink42ED6FF0
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: GET
+        Type: HTTP_PROXY
+        Uri:
+          Fn::Join:
+            - ""
+            - - http://
+              - Fn::GetAtt:
+                  - NetworkLoadBalancer8E753273
+                  - DNSName
+              - /countries
+      ResourceId:
+        Ref: CarmenWorkerAPIcountries81479692
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/countries/GET/Resource
+  CarmenWorkerAPIservices7B04142C:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - CarmenWorkerAPIDEDBEDC3
+          - RootResourceId
+      PathPart: services
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/services/Resource
+  CarmenWorkerAPIservicesOPTIONS389799B5:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+            StatusCode: "204"
+        RequestTemplates:
+          application/json: "{ statusCode: 200 }"
+        Type: MOCK
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Methods: true
+          StatusCode: "204"
+      ResourceId:
+        Ref: CarmenWorkerAPIservices7B04142C
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/services/OPTIONS/Resource
+  CarmenWorkerAPIservicesGET3AB9E228:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        ConnectionId:
+          Ref: VpcLink42ED6FF0
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: GET
+        Type: HTTP_PROXY
+        Uri:
+          Fn::Join:
+            - ""
+            - - http://
+              - Fn::GetAtt:
+                  - NetworkLoadBalancer8E753273
+                  - DNSName
+              - /services
+      ResourceId:
+        Ref: CarmenWorkerAPIservices7B04142C
+      RestApiId:
+        Ref: CarmenWorkerAPIDEDBEDC3
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CarmenWorkerAPI/Default/services/GET/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/21S0W7bMAz8lr4rWmrsB9xsKAKknWEHfR1omXHYyJIgUQkCw/8+WHbitNgTj3eE7kw6k8/ZT7l+gktYqea00lTLvmJQJ7E5mAI8dMjoBVzC3x5VJvsPp0bpo9iIItaaVBVrgzxyCyptZNxDrXHhFy4PwSoCJmvuwyP4vS3G8g78CowXuIrC0xkYl4e3htEbvA9MSeYuZwZ17NCwqFBFT3x99Ta6lOELsYNo1HGPndMweX9lBkHQyb600wekWlhNKjkuaGsCg1FYeHsgjYOAyDYo0GRa2eeRbTU19xzfuUGghsCktIWmBg1GkWnPmezfkS/Wn3YWmpfEo09BH/vbDAVGM+s3PGt78C3y3f+hHQQ4aqfVpbvuyKSz32CJgXNHaQMz/IVO22ta8eZgHrqKoZ2OnUCJwUav8AUCijfko21GcUY3dX454WF4oGNg2/1v6ptUeHumBn2yyUNAHu3JtMkMnJvhn8gupsgbaxoa/7xBGNug/Aw/ztlaPq/l+ukzEK18NEwdynKq/wBDfn3kIQMAAA==
+    Metadata:
+      aws:cdk:path: CarmenWorkerCdkStack/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Mappings:
+  AutoScalingGroupLaunchTemplateAmiMap85FD2B21:
+    eu-central-1:
+      ami: ami-03a9ccf07696362ab
+Outputs:
+  CarmenWorkerAPIEndpoint09F081B8:
+    Value:
+      Fn::Join:
+        - ""
+        - - https://
+          - Ref: CarmenWorkerAPIDEDBEDC3
+          - .execute-api.
+          - Ref: AWS::Region
+          - "."
+          - Ref: AWS::URLSuffix
+          - /
+          - Ref: CarmenWorkerAPIDeploymentStageprodA76C1BA3
+          - /
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - af-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ca-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-northwest-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-3
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - il-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - sa-east-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-2
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+

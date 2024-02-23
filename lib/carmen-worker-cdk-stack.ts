@@ -13,6 +13,9 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
 
     const amiId = 'ami-03a9ccf07696362ab';
 
+    // TODO: a régió is legyen paraméter, az AZ-kat ez alapján állítsuk be/kérdezzük le
+    // TODO: autoscaling group paraméterezése (desiredCapacity, minCapacity, maxCapacity, availability zones)
+
     const parameters = {
       instanceType: new cdk.CfnParameter(this, 'InstanceType', {
         type: 'String',
@@ -37,8 +40,6 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
         default: '',
       })
     };
-
-    // cdk.Tags.of(autoScalingGroup).add('ApiKey', 'e2dcf1e40f97e75073277df3aef5d709845e298b');
 
     const vpc = new ec2.Vpc(this, 'VPC', {
       maxAzs: 3

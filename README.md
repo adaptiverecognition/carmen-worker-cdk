@@ -1,6 +1,9 @@
 # Carmen Worker CDK Stack
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+An AWS CDK stack and CloudFormation template to help you self-host Carmen Worker, the Dockerized version of our APIs.
+
+You can either use the CloudFormation template in the `stack.yaml` file, or
+use this CDK stack to build your own.
 
 ## Useful commands
 
@@ -12,3 +15,12 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `npx cdk diff`    compare deployed stack with current state
 * `npx cdk synth`   emits the synthesized CloudFormation template
   * Save it using `npx cdk synth > stack.yaml`
+
+## Parameters
+
+- `ApiKey`: the API key to use to call the License Service (recognition will
+  still happen locally)
+- `InstanceType`: the EC2 instance type to use when creating VMs
+- `VehicleRegions`: the regions to load ANPR engines for
+- `InitDefaultEngines`: whether to initialize default engines
+- `TransportTypes`: the code types to load OCR engines for

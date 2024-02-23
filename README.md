@@ -24,3 +24,10 @@ use this CDK stack to build your own.
 - `VehicleRegions`: the regions to load ANPR engines for
 - `InitDefaultEngines`: whether to initialize default engines
 - `TransportTypes`: the code types to load OCR engines for
+- `AGDesiredCapacity`: the desired capacity (number of instances) of the
+  autoscaling group
+- `AGMinCapacity`: the minimum capacity (number of instances) of the autoscaling
+  group
+- `AGMaxCapacity`: the maximum capacity (number of instances) of the autoscaling
+  group
+

@@ -38,6 +38,18 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
       transportTypes: new cdk.CfnParameter(this, 'TransportTypes', {
         type: 'String',
         default: '',
+      }),
+      agDesiredCapacity: new cdk.CfnParameter(this, 'AGDesiredCapacity', {
+        type: 'Number',
+        default: 1,
+      }),
+      agMinCapacity: new cdk.CfnParameter(this, 'AGMinCapacity', {
+        type: 'Number',
+        default: 1,
+      }),
+      agMaxCapacity: new cdk.CfnParameter(this, 'AGMaxCapacity', {
+        type: 'Number',
+        default: 4,
       })
     };
 
@@ -67,9 +79,9 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
         'eu-central-1': amiId
       }),
       // keyName: 'my-key-pair', // Replace with your key pair name
-      desiredCapacity: 1,
-      minCapacity: 1,
-      maxCapacity: 4,
+      desiredCapacity: parameters.agDesiredCapacity.valueAsNumber,
+      minCapacity: parameters.agMinCapacity.valueAsNumber,
+      maxCapacity: parameters.agMaxCapacity.valueAsNumber,
       role
     });
 

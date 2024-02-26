@@ -43,11 +43,6 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
         default: '',
         description: 'The code types to load OCR engines for.'
       }),
-      maxAzs: new cdk.CfnParameter(this, 'MaxAZs', {
-        type: 'Number',
-        default: 3,
-        description: 'The maximum number of Availability Zones to use in this region.'
-      }),
       agDesiredCapacity: new cdk.CfnParameter(this, 'AGDesiredCapacity', {
         type: 'Number',
         default: 1,
@@ -66,7 +61,7 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
     };
 
     const vpc = new ec2.Vpc(this, 'VPC', {
-      maxAzs: parameters.maxAzs.valueAsNumber
+      maxAzs: 3
     });
 
     const role = new iam.Role(this, 'InstanceRole', {

@@ -9,13 +9,27 @@ Parameters:
   VehicleRegions:
     Type: String
     Default: eur
-    Description: The regions to load engines for.
+    Description: The regions to load ANPR engines for.
   InitDefaultEngines:
     Type: String
     Default: "false"
+    Description: Whether to initialize the default engines or not.
   TransportTypes:
     Type: String
     Default: ""
+    Description: The code types to load OCR engines for.
+  AGDesiredCapacity:
+    Type: Number
+    Default: 1
+    Description: The number of Amazon EC2 instances that should be running in the Auto Scaling group.
+  AGMinCapacity:
+    Type: Number
+    Default: 1
+    Description: The minimum number of Amazon EC2 instances that should be running in the Auto Scaling group.
+  AGMaxCapacity:
+    Type: Number
+    Default: 4
+    Description: The maximum number of Amazon EC2 instances that should be running in the Auto Scaling group.
   BootstrapVersion:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /cdk-bootstrap/hnb659fds/version
@@ -546,7 +560,8 @@ Resources:
   AutoScalingGroupASG804C35BE:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      DesiredCapacity: "1"
+      DesiredCapacity:
+        Ref: AGDesiredCapacity
       LaunchTemplate:
         LaunchTemplateId:
           Ref: AutoScalingGroupLaunchTemplateCE2B3AFE
@@ -554,8 +569,10 @@ Resources:
           Fn::GetAtt:
             - AutoScalingGroupLaunchTemplateCE2B3AFE
             - LatestVersionNumber
-      MaxSize: "4"
-      MinSize: "1"
+      MaxSize:
+        Ref: AGMaxCapacity
+      MinSize:
+        Ref: AGMinCapacity
       Tags:
         - Key: ApiKey
           PropagateAtLaunch: true

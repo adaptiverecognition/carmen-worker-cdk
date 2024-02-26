@@ -11,7 +11,9 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const amiId = 'ami-03a9ccf07696362ab';
+    const amiIdMap = {
+      'eu-central-1': 'ami-03a9ccf07696362ab'
+    };
 
     // TODO: a régió is legyen paraméter, az AZ-kat ez alapján állítsuk be/kérdezzük le
     // TODO: autoscaling group paraméterezése (desiredCapacity, minCapacity, maxCapacity, availability zones)
@@ -28,33 +30,43 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
       }),
       vehicleRegions: new cdk.CfnParameter(this, 'VehicleRegions', {
         type: 'String',
-        description: 'The regions to load engines for.',
+        description: 'The regions to load ANPR engines for.',
         default: 'eur'
       }),
       initDefaultEngines: new cdk.CfnParameter(this, 'InitDefaultEngines', {
         type: 'String',
-        default: 'false'
+        default: 'false',
+        description: 'Whether to initialize the default engines or not.'
       }),
       transportTypes: new cdk.CfnParameter(this, 'TransportTypes', {
         type: 'String',
         default: '',
+        description: 'The code types to load OCR engines for.'
+      }),
+      maxAzs: new cdk.CfnParameter(this, 'MaxAZs', {
+        type: 'Number',
+        default: 3,
+        description: 'The maximum number of Availability Zones to use in this region.'
       }),
       agDesiredCapacity: new cdk.CfnParameter(this, 'AGDesiredCapacity', {
         type: 'Number',
         default: 1,
+        description: 'The number of Amazon EC2 instances that should be running in the Auto Scaling group.'
       }),
       agMinCapacity: new cdk.CfnParameter(this, 'AGMinCapacity', {
         type: 'Number',
         default: 1,
+        description: 'The minimum number of Amazon EC2 instances that should be running in the Auto Scaling group.'
       }),
       agMaxCapacity: new cdk.CfnParameter(this, 'AGMaxCapacity', {
         type: 'Number',
         default: 4,
+        description: 'The maximum number of Amazon EC2 instances that should be running in the Auto Scaling group.'
       })
     };
 
     const vpc = new ec2.Vpc(this, 'VPC', {
-      maxAzs: 3
+      maxAzs: parameters.maxAzs.valueAsNumber
     });
 
     const role = new iam.Role(this, 'InstanceRole', {
@@ -75,9 +87,7 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
     const autoScalingGroup = new autoscaling.AutoScalingGroup(this, 'AutoScalingGroup', {
       vpc,
       instanceType: new ec2.InstanceType(parameters.instanceType.valueAsString),
-      machineImage: ec2.MachineImage.genericLinux({
-        'eu-central-1': amiId
-      }),
+      machineImage: ec2.MachineImage.genericLinux(amiIdMap),
       // keyName: 'my-key-pair', // Replace with your key pair name
       desiredCapacity: parameters.agDesiredCapacity.valueAsNumber,
       minCapacity: parameters.agMinCapacity.valueAsNumber,
@@ -94,7 +104,6 @@ export class CarmenWorkerCdkStack extends cdk.Stack {
     const startupScript = fs.readFileSync(startupScriptPath, 'utf8');
 
     autoScalingGroup.addUserData(startupScript);
-    
 
     const loadBalancer = new elbv2.NetworkLoadBalancer(this, 'NetworkLoadBalancer', {
       vpc,

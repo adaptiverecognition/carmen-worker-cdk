@@ -12,6 +12,7 @@ use this CDK stack to build your own.
 * `npm run test`    perform the jest unit tests
 * `npx cdk deploy`  deploy this stack to your default AWS account/region
   * Deploying with parameters: `npx cdk deploy --parameters ApiKey=...`
+  * Deploying into a specific region: `npx cdk deploy --region us-west-1`
 * `npx cdk diff`    compare deployed stack with current state
 * `npx cdk synth`   emits the synthesized CloudFormation template
   * Save it using `npx cdk synth > stack.yaml`
@@ -24,6 +25,7 @@ use this CDK stack to build your own.
 - `VehicleRegions`: the regions to load ANPR engines for
 - `InitDefaultEngines`: whether to initialize default engines
 - `TransportTypes`: the code types to load OCR engines for
+- `MaxAZs`: the maximum number of availability zones to use
 - `AGDesiredCapacity`: the desired capacity (number of instances) of the
   autoscaling group
 - `AGMinCapacity`: the minimum capacity (number of instances) of the autoscaling
